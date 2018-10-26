@@ -1,40 +1,37 @@
-﻿using QQ.Framework.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace QQ.Framework.Packets.Receive.Data
 {
-    public class Receive_0x001D : ReceivePacket
+    public class Receive_0X001D : ReceivePacket
     {
         /// <summary>
-        /// 改变在线状态
+        ///     改变在线状态
         /// </summary>
-        public Receive_0x001D(ByteBuffer byteBuffer, QQUser User)
-            : base(byteBuffer, User, User.QQ_SessionKey)
+        public Receive_0X001D(byte[] byteBuffer, QQUser user)
+            : base(byteBuffer, user, user.TXProtocol.SessionKey)
         {
         }
-        protected override void ParseBody(ByteBuffer byteBuffer)
+
+        protected override void ParseBody()
         {
-            //密文
-            byte[] CipherText = byteBuffer.ToByteArray();
-            //明文
-            bodyDecrypted = QQTea.Decrypt(CipherText, byteBuffer.Position, CipherText.Length - byteBuffer.Position - 1, user.QQ_SessionKey);
-            //提取数据
-            ByteBuffer buf = new ByteBuffer(bodyDecrypted);
-            buf.GetByteArray(4);
-            user.QQ_Skey = Util.ConvertHexToString(Util.ToHex(buf.GetByteArray(10)));
-            if (string.IsNullOrEmpty(user.QQ_Skey))
+            Decrypt(User.TXProtocol.SessionKey);
+            Reader.ReadBytes(4);
+            User.QQSkey = Encoding.UTF8.GetString(Reader.ReadBytes(10));
+            if (string.IsNullOrEmpty(User.QQSkey))
             {
                 throw new Exception("skey获取失败");
             }
-            else
+
+            new Task(() =>
             {
-                user.QQ_Cookies = "uin=o" + user.QQ + ";skey=" + user.QQ_Skey + ";";
-                user.QQ_Gtk = Util.GET_GTK(user.QQ_Skey);
-            }
+                User.GetQunCookies();
+                User.Friends = User.Get_Friend_List();
+                User.Groups = User.Get_Group_List();
+            }).Start();
+            //User.QQCookies = "uin=o" + User.QQ + ";skey=" + User.QQSkey + ";";
+            //User.QQGtk = Util.GET_GTK(User.QQSkey);
         }
     }
 }

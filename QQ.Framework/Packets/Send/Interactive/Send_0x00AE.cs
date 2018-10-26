@@ -1,20 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using QQ.Framework.Utils;
 
 namespace QQ.Framework.Packets.Send.Interactive
 {
-    public class Send_0x00AE : SendPacket
+    public class Send_0X00Ae : SendPacket
     {
         /// <summary>
-        /// 初始化包体
+        ///     获取添加群或好友的令牌
         /// </summary>
-        /// <param name="buf">The buf.</param>
-        protected override void PutBody(ByteBuffer buf)
+        /// <param name="user"></param>
+        /// <param name="addQQ"></param>
+        /// <param name="addType"></param>
+        public Send_0X00Ae(QQUser user, long addQQ, AddFriendType addType)
+            : base(user)
         {
-            throw new NotImplementedException();
+            Sequence = GetNextSeq();
+            SecretKey = user.TXProtocol.SessionKey;
+            Command = QQCommand.Interactive0X00Ae;
+            AddQQ = addQQ;
+            AddType = addType;
+        }
+
+        public long AddQQ { get; set; }
+        public AddFriendType AddType { get; set; }
+
+        protected override void PutHeader()
+        {
+            base.PutHeader();
+            SendPACKET_FIX();
+        }
+
+        /// <summary>
+        ///     初始化包体
+        /// </summary>
+        protected override void PutBody()
+        {
+            BodyWriter.Write(new byte[]
+            {
+                0x01, 0x00
+            });
+            BodyWriter.Write((byte) AddType);
+            BodyWriter.BeWrite(AddQQ);
         }
     }
 }

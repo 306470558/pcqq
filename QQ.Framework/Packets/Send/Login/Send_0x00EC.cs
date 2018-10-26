@@ -1,42 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace QQ.Framework.Packets.Send.Login
 {
     /// <summary>
-    /// 改变在线状态
+    ///     改变在线状态
     /// </summary>
-    public class Send_0x00EC : SendPacket
+    public class Send_0X00Ec : SendPacket
     {
-        byte _loginStatus = LoginStatus.我在线上;
+        private readonly byte _loginStatus;
+
         /// <summary>
-        /// 改变在线状态
+        ///     改变在线状态
         /// </summary>
-        public Send_0x00EC(QQUser User,byte loginStatus)
-            : base(User)
+        public Send_0X00Ec(QQUser user, byte loginStatus = LoginStatus.我在线上)
+            : base(user)
         {
             Sequence = GetNextSeq();
-            _secretKey = user.QQ_SessionKey;
-            Command = QQCommand.Login0x00EC;
+            SecretKey = user.TXProtocol.SessionKey;
+            Command = QQCommand.Login0X00Ec;
             _loginStatus = loginStatus;
         }
-        protected override void PutHeader(ByteBuffer buf)
+
+        protected override void PutHeader()
         {
-            base.PutHeader(buf);
-            buf.Put(user.QQ_PACKET_FIXVER);
+            base.PutHeader();
+            SendPACKET_FIX();
         }
+
         /// <summary>
-        /// 初始化包体
+        ///     初始化包体
         /// </summary>
-        /// <param name="buf">The buf.</param>
-        protected override void PutBody(ByteBuffer buf)
+        protected override void PutBody()
         {
-            buf.Put(new byte[] { 0x01, 0x00 });
-            buf.Put(_loginStatus);
-            buf.Put(new byte[] { 0x00, 0x01, 0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00 });
+            BodyWriter.Write(new byte[] {0x01, 0x00});
+            BodyWriter.Write(_loginStatus);
+            BodyWriter.Write(new byte[] {0x00, 0x01, 0x00, 0x01, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00});
         }
     }
 }

@@ -1,36 +1,32 @@
-﻿using QQ.Framework.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using QQ.Framework.Utils;
 
 namespace QQ.Framework.Packets.Send.Message
 {
     /// <summary>
-    /// 心跳
+    ///     心跳
     /// </summary>
-    public class Send_0x0058 : SendPacket
+    public class Send_0X0058 : SendPacket
     {
-        public Send_0x0058(QQUser User)
-            : base(User)
+        public Send_0X0058(QQUser user)
+            : base(user)
         {
             Sequence = GetNextSeq();
-            _secretKey = user.QQ_SessionKey;
-            Command = QQCommand.Message0x0058;
+            SecretKey = user.TXProtocol.SessionKey;
+            Command = QQCommand.Message0X0058;
         }
 
-        protected override void PutHeader(ByteBuffer buf)
+        protected override void PutHeader()
         {
-            base.PutHeader(buf);
-            buf.Put(user.QQ_PACKET_FIXVER);
+            base.PutHeader();
+            SendPACKET_FIX();
         }
+
         /// <summary>
-        /// 初始化包体
+        ///     初始化包体
         /// </summary>
-        protected override void PutBody(ByteBuffer buf)
+        protected override void PutBody()
         {
-            buf.PutLong(user.QQ);
+            BodyWriter.BeWrite(User.QQ);
         }
     }
 }

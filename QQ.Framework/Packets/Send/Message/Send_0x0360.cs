@@ -1,50 +1,57 @@
-﻿using QQ.Framework.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using QQ.Framework.Utils;
 
 namespace QQ.Framework.Packets.Send.Message
 {
-    public class Send_0x0360 : SendPacket
+    public class Send_0X0360 : SendPacket
     {
+        private readonly long _recvGroupQQ;
+
         /// <summary>
-        /// 
         /// </summary>
-        /// <param name="byteBuffer"></param>
-        /// <param name="User"></param>
-        public Send_0x0360(QQUser User, byte[] timeLast)
-            : base(User)
+        /// <param name="user"></param>
+        public Send_0X0360(QQUser user, long recvGroupQQ, byte[] messageTime)
+            : base(user)
         {
             Sequence = GetNextSeq();
-            _secretKey = user.QQ_SessionKey;
-            Command = QQCommand.Message0x0360;
-            _timeLast = timeLast;
+            SecretKey = user.TXProtocol.SessionKey;
+            Command = QQCommand.Message0X0360;
+            MessageTime = messageTime;
+            _recvGroupQQ = recvGroupQQ;
         }
-        byte[] _timeLast;
-        protected override void PutHeader(ByteBuffer buf)
+
+        private byte[] MessageTime { get; }
+
+        protected override void PutHeader()
         {
-            base.PutHeader(buf);
-            buf.Put(user.QQ_PACKET_FIXVER);
+            base.PutHeader();
+            Writer.Write(new byte[]
+            {
+                0x04, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x68, 0x1C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00
+            });
         }
+
         /// <summary>
-        /// 初始化包体
+        ///     初始化包体
         /// </summary>
-        /// <param name="buf">The buf.</param>
-        protected override void PutBody(ByteBuffer buf)
+        protected override void PutBody()
         {
-            buf.Put(new byte[] { 0x00, 0x00, 0x00, 0x07, 0x00, 0x00 });
-
+            BodyWriter.Write(new byte[] {0x00, 0x00, 0x00, 0x07});
+            var data = new BinaryWriter(new MemoryStream());
+            data.Write(new byte[] {0x03, 0x08, 0x03, 0x22, 0x46, 0x08});
+            data.Write(Util.HexStringToByteArray(Util.PB_toLength(_recvGroupQQ)));
+            data.Write((byte) 0x10);
+            data.Write(
+                Util.HexStringToByteArray(
+                    Util.PB_toLength(Convert.ToInt64(Util.ToHex(MessageTime).Replace(" ", ""), 16))));
+            data.Write(new byte[] {0x20, 0x00});
             //数据长度
-            buf.Put(new byte[] { 0x00, 0x10 });
-
-
-            buf.Put(new byte[] { 0x08, 0x01, 0x12, 0x03, 0x98, 0x01, 0x00 });
-
+            BodyWriter.BeWrite(data.BaseStream.Length);
+            BodyWriter.Write(new byte[] {0x08, 0x01, 0x12, 0x03, 0x98, 0x01, 0x00});
             //数据
-            buf.Put(new byte[] { 0x08, 0x04, 0x2A, 0x0E, 0x08, 0xE7, 0xF6, 0xEC, 0x9C, 0x0E, 0x12, 0x06, 0x08, 0xED, 0xCB, 0x8B, 0x8D, 0x04 });
+            BodyWriter.Write(data.BaseStream.ToBytesArray());
         }
-
     }
 }

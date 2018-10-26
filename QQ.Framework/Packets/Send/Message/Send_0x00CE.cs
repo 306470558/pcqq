@@ -1,41 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace QQ.Framework.Packets.Send.Message
 {
-    public class Send_0x00CE : SendPacket
+    public class Send_0X00Ce : SendPacket
     {
         /// <summary>
-        /// 
         /// </summary>
-        /// <param name="byteBuffer"></param>
-        /// <param name="User"></param>
-        /// <param name="Data">要发送的数据内容</param>
-        /// <param name="_sequence">序号</param>
-        public Send_0x00CE(QQUser User, byte[] Data, char _sequence)
-            : base(User)
+        /// <param name="user"></param>
+        /// <param name="data">要发送的数据内容</param>
+        /// <param name="sequence">序号</param>
+        public Send_0X00Ce(QQUser user, byte[] data, char sequence)
+            : base(user)
         {
-            Sequence = _sequence;
-            _secretKey = user.QQ_SessionKey;
-            Command = QQCommand.Message0x00CE;
-            _data = Data;
+            Sequence = sequence;
+            SecretKey = user.TXProtocol.SessionKey;
+            Command = QQCommand.Message0X00Ce;
+            Data = data;
         }
-        private byte[] _data { get; set; }
-        protected override void PutHeader(ByteBuffer buf)
+
+        private byte[] Data { get; }
+
+        protected override void PutHeader()
         {
-            base.PutHeader(buf);
-            buf.Put(user.QQ_PACKET_FIXVER);
+            base.PutHeader();
+            SendPACKET_FIX();
         }
+
         /// <summary>
-        /// 初始化包体
+        ///     初始化包体
         /// </summary>
-        /// <param name="buf">The buf.</param>
-        protected override void PutBody(ByteBuffer buf)
+        protected override void PutBody()
         {
-            buf.Put(_data);
+            BodyWriter.Write(Data);
         }
     }
 }

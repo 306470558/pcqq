@@ -1,42 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace QQ.Framework.Packets.Send.Message
 {
-    public class Send_Currency : SendPacket
+    public class SendCurrency : SendPacket
     {
         /// <summary>
-        /// 通用响应包
+        ///     通用响应包
         /// </summary>
-        /// <param name="byteBuffer"></param>
-        /// <param name="User"></param>
-        /// <param name="Data">要发送的数据内容</param>
-        /// <param name="_sequence">序号</param>
-        public Send_Currency(QQUser User,byte[] Data,char _sequence,char _Command)
-            : base(User)
+        /// <param name="user"></param>
+        /// <param name="data">要发送的数据内容</param>
+        /// <param name="sequence">序号</param>
+        public SendCurrency(QQUser user, byte[] data, char sequence, char command)
+            : base(user)
         {
-            Sequence = _sequence;
-            _secretKey = user.QQ_SessionKey;
-            Command = (QQCommand)_Command;
-            _data = Data;
-        }
-        private byte[] _data { get; set; }
-        protected override void PutHeader(ByteBuffer buf)
-        {
-            base.PutHeader(buf);
-            buf.Put(user.QQ_PACKET_FIXVER);
-        }
-        /// <summary>
-        /// 初始化包体
-        /// </summary>
-        /// <param name="buf">The buf.</param>
-        protected override void PutBody(ByteBuffer buf)
-        {
-            buf.Put(_data);
+            Sequence = sequence;
+            SecretKey = user.TXProtocol.SessionKey;
+            Command = (QQCommand) command;
+            Data = data;
         }
 
+        private byte[] Data { get; }
+
+        protected override void PutHeader()
+        {
+            base.PutHeader();
+            SendPACKET_FIX();
+        }
+
+        /// <summary>
+        ///     初始化包体
+        /// </summary>
+        protected override void PutBody()
+        {
+            BodyWriter.Write(Data);
+        }
     }
 }

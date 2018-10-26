@@ -1,50 +1,27 @@
-﻿using QQ.Framework;
-using QQ.Framework.Packets.Send.Login;
-using QQ.Framework.Packets.Send.Message;
-using QQ.Framework.Sockets;
-using QQ.Framework.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
+using QQ.Framework;
+using QQ.Framework.Domains;
+using QQ.Framework.Sockets;
+using QQLoginTest.Robots;
 
 namespace QQLoginTest
 {
-    public class Program
+    public static class Program
     {
-        static QQClient client;
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            long MyQQ = 0;
-            string MyPassWord = "";
-            QQUser user = new QQUser(MyQQ, MyPassWord);
-            client = new QQClient()
-            {
-                QQUser = user
-            };
-            client.EventReceive_0x0017 += Client_EventReceive_0x0017;
-            client.EventReceive_0x00CE += Client_EventReceive_0x00CE;
+            var user = new QQUser(0, "");
+            var socketServer = new SocketServiceImpl(user);
+            var transponder = new Transponder();
+            var sendService = new SendMessageServiceImpl(socketServer, user);
 
-            client.Login();
+            var manage = new MessageManage(socketServer, user, transponder);
 
+            var robot = new TestRobot(sendService, transponder, user);
+
+            manage.Init();
             Console.ReadKey();
         }
-
-        /// <summary>
-        /// 好友消息
-        /// </summary>
-        private static void Client_EventReceive_0x00CE(object sender, QQEventArgs<QQ.Framework.Packets.Receive.Message.Receive_0x00CE> e)
-        {
-        }
-
-        /// <summary>
-        /// 群消息
-        /// </summary>
-        private static void Client_EventReceive_0x0017(object sender, QQEventArgs<QQ.Framework.Packets.Receive.Message.Receive_0x0017> e)
-        {
-        }
-
     }
 }

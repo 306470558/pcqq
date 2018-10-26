@@ -1,36 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using QQ.Framework.Utils;
 
 namespace QQ.Framework.Packets.Send.Data
 {
-    public class Send_0x005C : SendPacket
+    public class Send_0X005C : SendPacket
     {
-        public Send_0x005C(QQUser User)
-            : base(User)
+        public Send_0X005C(QQUser user)
+            : base(user)
         {
             Sequence = GetNextSeq();
-            _secretKey = user.QQ_SessionKey;
-            Command = QQCommand.Data0x005C;
-        }
-        protected override void PutHeader(ByteBuffer buf)
-        {
-            base.PutHeader(buf);
-            Sequence = GetNextSeq();
-            buf.Put(user.QQ_PACKET_FIXVER);
-        }
-        /// <summary>
-        /// 初始化包体
-        /// </summary>
-        /// <param name="buf">The buf.</param>
-        protected override void PutBody(ByteBuffer buf)
-        {
-            buf.Put(0x88);
-            buf.PutLong(user.QQ);
-            buf.Put(0x00);
+            SecretKey = user.TXProtocol.SessionKey;
+            Command = QQCommand.Data0X005C;
         }
 
+        protected override void PutHeader()
+        {
+            base.PutHeader();
+            Sequence = GetNextSeq();
+            SendPACKET_FIX();
+        }
+
+        /// <summary>
+        ///     初始化包体
+        /// </summary>
+        protected override void PutBody()
+        {
+            BodyWriter.Write((byte) 0x88);
+            BodyWriter.BeWrite(User.QQ);
+            BodyWriter.Write((byte) 0x00);
+        }
     }
 }

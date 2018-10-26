@@ -1,27 +1,32 @@
-﻿using QQ.Framework.Packets;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using QQ.Framework.Domains;
+using QQ.Framework.Packets;
 
-namespace QQ.Framework
+namespace QQ.Framework.Events
 {
-    public class QQEventArgs<R> : EventArgs
-        where R : ReceivePacket
+    public class QQEventArgs<TR> : EventArgs
+        where TR : ReceivePacket
     {
-        public QQEventArgs(QQClient client,R receivePacket)
+        public QQEventArgs(ISocketService service, QQUser user, TR receivePacket)
         {
-            this.QQClient = client;
-            this.ReceivePacket = receivePacket;
+            Service = service;
+            User = user;
+            ReceivePacket = receivePacket;
         }
+
         /// <summary>
-        /// 数据包
+        ///     数据包
         /// </summary>
-        public R ReceivePacket { get; private set; }
+        public TR ReceivePacket { get; }
+
         /// <summary>
-        /// 客户端实例
+        ///     Socket服务
         /// </summary>
-        public QQClient QQClient { get; private set; }
+        public ISocketService Service { get; }
+
+        /// <summary>
+        ///     账号信息
+        /// </summary>
+        public QQUser User { get; }
     }
 }
